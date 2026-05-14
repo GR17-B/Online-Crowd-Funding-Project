@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundRise — My Profile</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+<script src="auth.js"></script>
+<script>
+    Auth.requireAuth();
+    document.write(renderNavbar('profile'));
+</script>
+
+<main class="page-wrapper">
+    <div class="page-header">
+        <h1>My Profile</h1>
+        <p class="text-muted">Manage your account, view donation history, and withdraw funds.</p>
+    </div>
+
+    <div class="profile-grid">
+
+        <!-- Left: Profile card -->
+        <div>
+            <div class="card" style="text-align:center;margin-bottom:1.5rem">
+                <div class="profile-avatar" id="avatarEl" style="margin:0 auto 1rem"></div>
+                <h2 id="profileNameDisplay" style="font-size:1.3rem;margin-bottom:0.25rem"></h2>
+                <p id="profileEmailDisplay" class="text-muted" style="font-size:0.9rem"></p>
+                <span id="profileRoleBadge" class="badge" style="margin-top:0.75rem;background:var(--primary-light);color:var(--primary)"></span>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size:1rem;margin-bottom:1rem">Quick Stats</h3>
+                <div style="display:flex;flex-direction:column;gap:0.75rem">
+                    <div style="display:flex;justify-content:space-between;font-size:0.92rem">
+                        <span class="text-muted">Campaigns Created</span>
+                        <strong id="statCampaigns">0</strong>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.92rem">
+                        <span class="text-muted">Total Donated</span>
+                        <strong id="statDonated">$0</strong>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.92rem">
+                        <span class="text-muted">Member Since</span>
+                        <strong>2026</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Tabs -->
+        <div>
+            <div class="profile-tabs">
+                <button class="profile-tab active" onclick="switchPanel('edit')">Edit Profile</button>
+                <button class="profile-tab" onclick="switchPanel('donations')">Donation History</button>
+                <button class="profile-tab" onclick="switchPanel('campaigns')">My Campaigns</button>
+                <button class="profile-tab" onclick="switchPanel('withdraw')">Withdraw Funds</button>
+            </div>
+
+            <!-- Edit Profile -->
+            <div class="profile-panel active card" id="panel-edit">
+                <h3 style="font-size:1.05rem;margin-bottom:1.25rem">Account Details</h3>
+                <form onsubmit="handleProfileUpdate(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="profName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="profEmail" disabled>
+                        <span class="form-hint">Email cannot be changed.</span>
+                    </div>
+                    <hr class="divider">
+                    <h3 style="font-size:1.05rem;margin-bottom:1.25rem">Change Password</h3>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPass" placeholder="Leave blank to keep current">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="confirmPass" placeholder="Repeat new password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+
+            <!-- Donation History -->
+            <div class="profile-panel card" id="panel-donations">
+                <h3 style="font-size:1.05rem;margin-bottom:1.25rem">Donation History</h3>
+                <div id="donationList"></div>
+            </div>
+
+            <!-- My Campaigns -->
+            <div class="profile-panel card" id="panel-campaigns">
+                <h3 style="font-size:1.05rem;margin-bottom:1.25rem">My Campaigns</h3>
+                <div id="myCampaignsList"></div>
+            </div>
+
+            <!-- Withdraw Funds -->
+            <div class="profile-panel card" id="panel-withdraw">
+                <h3 style="font-size:1.05rem;margin-bottom:1.25rem">Request Fund Withdrawal</h3>
+                <p class="text-muted" style="font-size:0.9rem;margin-bottom:1.25rem">Withdrawals are reviewed within 2–3 business days. Funds are sent to your registered account.</p>
+                <form onsubmit="handleWithdraw(event)">
+                    <div class="form-group">
+                        <label>Amount to Withdraw ($)</label>
+                        <input type="number" id="withdrawAmt" min="1" placeholder="e.g. 500" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select id="withdrawMethod">
+                            <option value="mobile">Mobile Money</option>
+                            <option value="bank">Bank Transfer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Account / Phone Details</label>
+                        <textarea id="withdrawDetails" rows="3" placeholder="e.g. MTN: 024 123 4567 — Kwame Asante&#10;or Bank: GCB — Acct No. 1234567890"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Withdrawal Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <p>&copy; 2026 FundRise. All rights reserved.</p>
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+    const user = Auth.getUser();
+
+    // Populate UI
+    document.getElementById('avatarEl').textContent = user.name.charAt(0).toUpperCase();
+    document.getElementById('profileNameDisplay').textContent = user.name;
+    document.getElementById('profileEmailDisplay').textContent = user.email;
+    document.getElementById('profileRoleBadge').textContent = user.role || 'USER';
+    document.getElementById('profName').value = user.name;
+    document.getElementById('profEmail').value = user.email;
+
+    // Stats
+    const allCampaigns = Store.getCampaigns();
+    const mine = allCampaigns.filter(c => c.ownerId === user.id);
+    document.getElementById('statCampaigns').textContent = mine.length;
+    const totalDonated = allCampaigns.reduce((sum, c) =>
+        sum + (c.donors || []).filter(d => !d.anon && d.name === user.name).reduce((s, d) => s + d.amount, 0), 0);
+    document.getElementById('statDonated').textContent = '$' + totalDonated.toLocaleString();
+
+    // Donation history (mock + real)
+    const donationListEl = document.getElementById('donationList');
+    const mockDonations = [
+        { campaign: 'Heart Surgery for Leo', amount: 25, date: '2026-03-10', method: 'Mobile Money' },
+        { campaign: 'Community Library Build', amount: 50, date: '2026-02-15', method: 'Card' }
+    ];
+    donationListEl.innerHTML = mockDonations.length
+        ? `<ul class="donor-list">${mockDonations.map(d => `
+            <li>
+                <div>
+                    <div style="font-weight:600;font-size:0.92rem">${d.campaign}</div>
+                    <div class="text-muted" style="font-size:0.8rem">${d.date} &bull; ${d.method}</div>
+                </div>
+                <strong>$${d.amount}</strong>
+            </li>`).join('')}</ul>`
+        : '<p class="text-muted" style="font-size:0.9rem">No donations recorded yet.</p>';
+
+    // My campaigns
+    const myCampaignsEl = document.getElementById('myCampaignsList');
+    myCampaignsEl.innerHTML = mine.length
+        ? mine.map(c => {
+            const pct = Math.min(100, Math.round((c.raised / c.target) * 100));
+            return `
+            <div style="border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:0.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:0.5rem">
+                    <div>
+                        <div style="font-weight:600">${c.title}</div>
+                        <div class="text-muted" style="font-size:0.82rem">${c.deadline} &bull; <span class="badge badge-${c.category}">${c.category}</span></div>
+                    </div>
+                    <a href="create.html?edit=${c.id}" class="btn btn-outline btn-sm">Edit</a>
+                </div>
+                <div class="progress-bar" style="margin:0.75rem 0"><div class="progress-fill" style="width:${pct}%"></div></div>
+                <div style="display:flex;justify-content:space-between;font-size:0.85rem">
+                    <span class="text-muted">$${c.raised.toLocaleString()} of $${c.target.toLocaleString()}</span>
+                    <span class="text-muted">${pct}%</span>
+                </div>
+            </div>`;
+        }).join('')
+        : '<p class="text-muted" style="font-size:0.9rem">You haven\'t created any campaigns yet. <a href="create.html" style="color:var(--primary)">Start one!</a></p>';
+
+    function switchPanel(name) {
+        document.querySelectorAll('.profile-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.profile-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function handleProfileUpdate(e) {
+        e.preventDefault();
+        const newPass = document.getElementById('newPass').value;
+        const confirmPass = document.getElementById('confirmPass').value;
+        if (newPass && newPass !== confirmPass) { showToast('Passwords do not match.', 'warning'); return; }
+        user.name = document.getElementById('profName').value;
+        localStorage.setItem('fr_user', JSON.stringify(user));
+        document.getElementById('profileNameDisplay').textContent = user.name;
+        document.getElementById('avatarEl').textContent = user.name.charAt(0).toUpperCase();
+        showToast('Profile updated successfully!');
+    }
+
+    function handleWithdraw(e) {
+        e.preventDefault();
+        const amt = document.getElementById('withdrawAmt').value;
+        const details = document.getElementById('withdrawDetails').value;
+        if (!details.trim()) { showToast('Please enter your account details.', 'warning'); return; }
+        showToast(`Withdrawal request for $${amt} submitted. Pending admin review.`, 'info');
+        e.target.reset();
+    }
+</script>
+</body>
+</html>

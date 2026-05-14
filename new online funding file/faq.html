@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundRise — Help & FAQ</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+<script src="auth.js"></script>
+<script>document.write(renderNavbar('faq'));</script>
+
+<main class="page-wrapper">
+    <div class="page-header">
+        <h1>Help & FAQ</h1>
+        <p class="text-muted">Everything you need to know about using FundRise.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:2rem;align-items:start">
+
+        <!-- FAQ List -->
+        <div>
+            <h2 style="font-size:1.2rem;margin-bottom:1rem">Frequently Asked Questions</h2>
+
+            <div class="faq-section" style="margin-bottom:2rem">
+                <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.75rem;font-family:'DM Sans',sans-serif;font-weight:600">Getting Started</h3>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How do I start a campaign? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">Go to <strong>Start Campaign</strong>, fill in your campaign title, category, target amount, deadline, and description. Upload an image or video, accept the Terms & Conditions, and click Launch. You must be logged in to create a campaign.</div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Do I need an account to donate? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">Yes, you need a free FundRise account to make donations. This helps us prevent fraud and lets you track your giving history. Registration takes less than a minute.</div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What categories of campaigns are supported? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">We support: <strong>Medical</strong> (surgeries, treatments), <strong>Education</strong> (school fees, supplies), <strong>Funeral</strong> (burial costs, support), <strong>Business</strong> (startups, expansions), and <strong>Charity</strong> (community causes). More categories may be added in future.</div>
+                </div>
+            </div>
+
+            <div class="faq-section" style="margin-bottom:2rem">
+                <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.75rem;font-family:'DM Sans',sans-serif;font-weight:600">Payments & Donations</h3>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What payment methods are accepted? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">We currently support <strong>Credit/Debit Cards</strong>, <strong>Mobile Money</strong> (MTN, Vodafone, AirtelTigo), and <strong>Bank Transfer</strong>. All transactions are encrypted and processed securely.</div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Can I donate anonymously? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">Yes! On the campaign page, toggle the <strong>"Donate Anonymously"</strong> checkbox before submitting your donation. Your name will appear as "Anonymous" to the campaign owner and other donors.</div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Is there a minimum or maximum donation amount? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">The minimum donation is <strong>$1</strong>. There is no maximum limit. You can also choose from preset amounts ($5, $10, $20, $50, $100, $200) or enter a custom amount.</div>
+                </div>
+            </div>
+
+            <div class="faq-section" style="margin-bottom:2rem">
+                <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.75rem;font-family:'DM Sans',sans-serif;font-weight:600">Managing Campaigns</h3>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Can I edit my campaign after publishing? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">Yes. Go to <strong>My Profile → My Campaigns</strong> and click Edit next to the campaign you want to update. You can change the title, description, media, and deadline. The target amount and raised total cannot be reduced.</div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How do I withdraw funds? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">Go to <strong>My Profile → Withdraw Funds</strong>. Enter the amount, select your preferred payment method, and provide your account details. Withdrawal requests are reviewed within 2–3 business days before funds are released.</div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What happens when a campaign reaches its deadline? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">When a campaign's deadline passes, it is marked as <strong>Ended</strong>. All funds raised up to that point remain available for withdrawal. Campaigns can still receive donations even after the deadline in some cases — contact support for assistance.</div>
+                </div>
+            </div>
+
+            <div class="faq-section">
+                <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.75rem;font-family:'DM Sans',sans-serif;font-weight:600">Safety & Trust</h3>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How do I report a suspicious campaign? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">On any campaign page, click the <strong>"Report"</strong> button and describe your concern. Our moderation team reviews all reports within 24 hours. Campaigns found to be fraudulent are removed immediately.</div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How is my personal data protected? <i class="chevron">▾</i>
+                    </button>
+                    <div class="faq-answer">FundRise takes your privacy seriously. We do not sell your data to third parties. All data is encrypted in transit and at rest. You can delete your account at any time by contacting support.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <div class="card" style="margin-bottom:1.5rem;background:var(--primary-dark);color:#fff;border:none">
+                <h3 style="font-size:1.05rem;margin-bottom:0.5rem;color:#fff">Still need help?</h3>
+                <p style="font-size:0.88rem;opacity:0.8;margin-bottom:1.25rem;line-height:1.6">Our support team is available Monday–Friday, 8am–6pm.</p>
+                <a href="mailto:support@fundrise.app" class="btn" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3);width:100%;justify-content:center">✉️ Email Support</a>
+            </div>
+
+            <div class="card" style="margin-bottom:1.5rem">
+                <h3 style="font-size:1.05rem;margin-bottom:0.75rem">Useful Links</h3>
+                <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem">
+                    <li><a href="index.html" style="color:var(--primary);font-size:0.92rem">→ Browse Campaigns</a></li>
+                    <li><a href="create.html" style="color:var(--primary);font-size:0.92rem">→ Start a Campaign</a></li>
+                    <li><a href="profile.html" style="color:var(--primary);font-size:0.92rem">→ My Profile</a></li>
+                    <li><a href="login.html" style="color:var(--primary);font-size:0.92rem">→ Login / Register</a></li>
+                </ul>
+            </div>
+
+            <div class="card" style="background:var(--primary-light);border-color:transparent">
+                <h3 style="font-size:1rem;margin-bottom:0.5rem;color:var(--primary)">Terms & Privacy</h3>
+                <p style="font-size:0.85rem;color:var(--primary-dark);line-height:1.6">By using FundRise you agree to our Terms of Service. We are committed to transparent, ethical fundraising.</p>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer class="site-footer">
+    <p>&copy; 2026 FundRise. All rights reserved. &nbsp;|&nbsp; <a href="faq.html">Terms of Service</a> &nbsp;|&nbsp; <a href="faq.html">Privacy Policy</a></p>
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+    function toggleFaq(btn) {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+    }
+</script>
+</body>
+</html>

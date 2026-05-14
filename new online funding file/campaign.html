@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundRise — Campaign</title>
+    <link rel="stylesheet" href="main.css">
+    <style>
+        .donate-card { position: sticky; top: calc(var(--nav-h) + 1.5rem); }
+        .donate-amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+        .amount-btn { padding: 0.6rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg); cursor: pointer; font-weight: 600; font-size: 0.95rem; font-family: 'DM Sans', sans-serif; transition: all 0.18s; }
+        .amount-btn.selected, .amount-btn:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        .payment-methods { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .pay-btn { flex: 1; min-width: 80px; padding: 0.55rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg); cursor: pointer; font-size: 0.85rem; font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all 0.18s; text-align: center; }
+        .pay-btn.selected, .pay-btn:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
+    </style>
+</head>
+<body>
+<script src="auth.js"></script>
+<script>document.write(renderNavbar(''));</script>
+
+<main class="page-wrapper">
+    <a href="index.html" class="back-link">← Back to Campaigns</a>
+    <div id="pageContent"><p class="text-muted">Loading…</p></div>
+</main>
+
+<footer class="site-footer">
+    <p>&copy; 2026 FundRise. All rights reserved.</p>
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+const id = Store.getCurrentCampaignId();
+if (!id) { window.location.href = 'index.html'; }
+
+let campaign = Store.getCampaignById(id);
+if (!campaign) { window.location.href = 'index.html'; }
+
+let selectedAmount = 20;
+let selectedMethod = 'card';
+
+function render() {
+    campaign = Store.getCampaignById(id);
+    const pct = Math.min(100, Math.round((campaign.raised / campaign.target) * 100));
+    const days = Math.max(0, Math.ceil((new Date(campaign.deadline) - new Date()) / 86400000));
+    const user = Auth.getUser();
+    const isOwner = user && campaign.ownerId === user.id;
+    const icons = { medical:'🏥', education:'📚', funeral:'🕊️', business:'💼', charity:'❤️' };
+
+    const donorHTML = (campaign.donors || []).length
+        ? `<ul class="donor-list">${campaign.donors.map(d => `<li><span>${d.anon ? '🙈 Anonymous' : '👤 ' + d.name}</span><strong>$${d.amount}</strong></li>`).join('')}</ul>`
+        : '<p class="text-muted" style="font-size:0.9rem">No donations yet. Be the first!</p>';
+
+    const commentsHTML = (campaign.comments || []).map(c => `
+        <div class="comment">
+            <strong>${c.user}</strong> <span class="text-muted" style="font-size:0.8rem">${c.date}</span>
+            <p>${c.text}</p>
+        </div>`).join('') || '<p class="text-muted" style="font-size:0.9rem">No comments yet.</p>';
+
+    document.getElementById('pageContent').innerHTML = `
+    <div class="detail-grid">
+        <!-- LEFT: Campaign Info -->
+        <div>
+            <div class="detail-media">
+                ${campaign.mediaUrl ? `<img src="${campaign.mediaUrl}" alt="${campaign.title}">` : icons[campaign.category] || '📷'}
+            </div>
+
+            <div class="tag-row">
+                <span class="badge badge-${campaign.category}">${campaign.category}</span>
+                <span class="badge" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border)">⏳ ${days} days left</span>
+                <span class="badge" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border)">❤️ ${campaign.likes || 0} likes</span>
+            </div>
+
+            <h1 style="font-size:1.9rem;margin-bottom:0.75rem">${campaign.title}</h1>
+            <p style="color:var(--text-muted);line-height:1.75;margin-bottom:1.5rem">${campaign.desc}</p>
+
+            <div class="detail-actions">
+                <button class="btn btn-outline btn-sm" onclick="handleLike()">❤️ Like (${campaign.likes || 0})</button>
+                <button class="btn btn-outline btn-sm" onclick="handleShare()">🔗 Share</button>
+                <button class="btn btn-ghost btn-sm" onclick="handleContact()">✉️ Contact Owner</button>
+                <button class="btn btn-ghost btn-sm" onclick="handleReport()">🚩 Report</button>
+                ${isOwner ? `<a href="create.html?edit=${campaign.id}" class="btn btn-outline btn-sm">✏️ Edit Campaign</a>` : ''}
+            </div>
+
+            <hr class="divider">
+
+            <!-- Donors -->
+            <h3 style="font-size:1.1rem;margin-bottom:1rem">Donors (${(campaign.donors||[]).length})</h3>
+            ${donorHTML}
+
+            <hr class="divider">
+
+            <!-- Comments -->
+            <h3 style="font-size:1.1rem;margin-bottom:1rem">Comments (${(campaign.comments||[]).length})</h3>
+            ${commentsHTML}
+            <form onsubmit="handleComment(event)" style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap">
+                <input type="text" id="commentInput" placeholder="Write a comment…" required
+                    style="flex:1;min-width:200px;padding:0.65rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none">
+                <button type="submit" class="btn btn-primary">Post</button>
+            </form>
+        </div>
+
+        <!-- RIGHT: Donate Card -->
+        <div class="card donate-card">
+            <h2 style="font-size:1.1rem;margin-bottom:0.25rem">Funding Progress</h2>
+            <p style="font-size:2rem;font-family:'Playfair Display',serif;color:var(--primary);font-weight:700">$${campaign.raised.toLocaleString()}</p>
+            <p class="text-muted" style="font-size:0.88rem">raised of <strong>$${campaign.target.toLocaleString()}</strong> goal</p>
+            <div class="progress-bar" style="margin:0.75rem 0"><div class="progress-fill" style="width:${pct}%"></div></div>
+            <p class="text-muted" style="font-size:0.88rem;margin-bottom:1.5rem">${pct}% funded &bull; ${(campaign.donors||[]).length} donors &bull; ${days} days left</p>
+
+            <hr class="divider" style="margin:0 0 1.25rem">
+
+            <h3 style="font-size:1rem;margin-bottom:0.75rem">Make a Donation</h3>
+
+            <!-- Quick amounts -->
+            <div class="donate-amount-grid" id="amountGrid">
+                ${[5,10,20,50,100,200].map(a => `<button class="amount-btn ${a===selectedAmount?'selected':''}" onclick="setAmount(${a})">$${a}</button>`).join('')}
+            </div>
+
+            <div class="form-group" style="margin-bottom:0.75rem">
+                <label>Custom Amount ($)</label>
+                <input type="number" id="customAmount" placeholder="Enter amount" min="1"
+                    oninput="selectedAmount=parseFloat(this.value)||0;document.querySelectorAll('.amount-btn').forEach(b=>b.classList.remove('selected'))">
+            </div>
+
+            <!-- Payment method -->
+            <label style="font-size:0.9rem;font-weight:600;display:block;margin-bottom:0.5rem">Payment Method</label>
+            <div class="payment-methods" id="payMethods">
+                <button class="pay-btn selected" onclick="setMethod('card',this)">💳 Card</button>
+                <button class="pay-btn" onclick="setMethod('mobile',this)">📱 Mobile Money</button>
+                <button class="pay-btn" onclick="setMethod('bank',this)">🏦 Bank Transfer</button>
+            </div>
+
+            <div class="form-check" style="margin-bottom:1.25rem">
+                <input type="checkbox" id="anonCheck">
+                <label for="anonCheck" style="font-size:0.88rem;color:var(--text-muted)">Donate anonymously</label>
+            </div>
+
+            <button class="btn btn-accent btn-lg btn-block" onclick="handleDonate()">Donate $<span id="donateAmountLabel">${selectedAmount}</span></button>
+            <p class="text-center text-muted mt-1" style="font-size:0.78rem">🔒 Secure &bull; Encrypted &bull; Trusted</p>
+        </div>
+    </div>`;
+}
+
+function setAmount(a) {
+    selectedAmount = a;
+    document.getElementById('customAmount').value = '';
+    document.getElementById('donateAmountLabel').textContent = a;
+    document.querySelectorAll('.amount-btn').forEach(b => b.classList.toggle('selected', parseInt(b.textContent.replace('$','')) === a));
+}
+
+function setMethod(m, el) {
+    selectedMethod = m;
+    document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function handleDonate() {
+    if (!Auth.isLoggedIn()) { showToast('Please login to donate.', 'warning'); setTimeout(()=>window.location.href='login.html?redirect='+encodeURIComponent(location.href),1000); return; }
+    const amt = parseFloat(document.getElementById('customAmount').value) || selectedAmount;
+    if (!amt || amt < 1) { showToast('Please enter a valid amount.', 'warning'); return; }
+    const isAnon = document.getElementById('anonCheck').checked;
+    const user = Auth.getUser();
+    const campaigns = Store.getCampaigns();
+    const idx = campaigns.findIndex(c => c.id == id);
+    campaigns[idx].raised += amt;
+    campaigns[idx].donors.unshift({ name: isAnon ? 'Anonymous' : user.name, amount: amt, anon: isAnon });
+    Store.saveCampaigns(campaigns);
+    showToast(`Thank you! $${amt} donated via ${selectedMethod.toUpperCase()}.`);
+    setTimeout(render, 500);
+}
+
+function handleLike() {
+    const campaigns = Store.getCampaigns();
+    const idx = campaigns.findIndex(c => c.id == id);
+    campaigns[idx].likes = (campaigns[idx].likes || 0) + 1;
+    Store.saveCampaigns(campaigns);
+    showToast('Campaign liked!');
+    render();
+}
+
+function handleShare() {
+    const url = window.location.href;
+    if (navigator.clipboard) { navigator.clipboard.writeText(url).then(() => showToast('Link copied to clipboard!')); }
+    else { prompt('Copy link:', url); }
+}
+
+function handleContact() { showToast('Message sent to campaign owner.', 'info'); }
+
+function handleReport() {
+    const reason = prompt('Please describe why you are reporting this campaign:');
+    if (reason) showToast('Report submitted. Thank you for keeping our community safe.', 'info');
+}
+
+function handleComment(e) {
+    e.preventDefault();
+    if (!Auth.isLoggedIn()) { showToast('Please login to comment.', 'warning'); return; }
+    const text = document.getElementById('commentInput').value.trim();
+    const user = Auth.getUser();
+    const campaigns = Store.getCampaigns();
+    const idx = campaigns.findIndex(c => c.id == id);
+    campaigns[idx].comments.push({ user: user.name, text, date: new Date().toISOString().split('T')[0] });
+    Store.saveCampaigns(campaigns);
+    showToast('Comment posted!');
+    render();
+}
+
+render();
+</script>
+</body>
+</html>

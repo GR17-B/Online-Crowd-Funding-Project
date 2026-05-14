@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundRise — Start a Campaign</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+<script src="auth.js"></script>
+<script>
+    Auth.requireAuth();
+    document.write(renderNavbar('create'));
+</script>
+
+<main class="page-wrapper">
+    <div class="page-header">
+        <h1 id="pageTitle">Start a New Campaign</h1>
+        <p class="text-muted">Fill in the details below. Be clear, honest, and compelling — it makes a difference.</p>
+    </div>
+
+    <div class="create-layout">
+
+        <!-- Form -->
+        <div class="card">
+            <form id="campaignForm" onsubmit="handleSubmit(event)">
+                <input type="hidden" id="campaignId">
+
+                <div class="form-group">
+                    <label>Campaign Title *</label>
+                    <input type="text" id="campTitle" placeholder="e.g. Help Kofi get urgent surgery" required>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select id="campCategory" required>
+                            <option value="medical">🏥 Medical</option>
+                            <option value="education">📚 Education</option>
+                            <option value="funeral">🕊️ Funeral</option>
+                            <option value="business">💼 Business</option>
+                            <option value="charity">❤️ Charity</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Amount ($) *</label>
+                        <input type="number" id="campTarget" placeholder="e.g. 5000" min="10" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Deadline *</label>
+                    <input type="date" id="campDeadline" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="campDesc" rows="5" placeholder="Tell your story. Why does this campaign matter? How will funds be used?" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Campaign Image / Video</label>
+                    <input type="file" id="campMedia" accept="image/*,video/*" onchange="previewMedia(event)">
+                    <span class="form-hint">Supported: JPG, PNG, MP4. Max 10MB recommended.</span>
+                </div>
+
+                <div id="mediaPreview" style="margin-bottom:1rem"></div>
+
+                <div class="form-check">
+                    <input type="checkbox" id="campTerms" required>
+                    <label for="campTerms">I accept the <a href="faq.html">Terms & Conditions</a> and confirm all information is truthful.</label>
+                </div>
+
+                <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Launch Campaign</button>
+                    <a href="index.html" class="btn btn-ghost btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tips sidebar -->
+        <div>
+            <div class="card" style="margin-bottom:1.5rem">
+                <h3 style="font-size:1rem;margin-bottom:1rem">💡 Tips for a Great Campaign</h3>
+                <ul class="create-tips" style="list-style:none">
+                    <li>Use a clear, emotional title that explains the need quickly.</li>
+                    <li>Set a realistic target — campaigns that are funded quickly build momentum.</li>
+                    <li>Add a high-quality image or short video. It dramatically increases donations.</li>
+                    <li>Write a compelling story. Share who benefits and how funds will be used.</li>
+                    <li>Share your campaign on social media and with family immediately after launching.</li>
+                </ul>
+            </div>
+
+            <div class="card" style="background:var(--primary-light);border-color:transparent">
+                <h3 style="font-size:1rem;margin-bottom:0.5rem;color:var(--primary)">🔒 Safe & Secure</h3>
+                <p style="font-size:0.88rem;color:var(--primary-dark);line-height:1.6">All campaigns are reviewed by our team. Funds are held securely until withdrawal is approved. You can edit your campaign at any time.</p>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer class="site-footer">
+    <p>&copy; 2026 FundRise. All rights reserved.</p>
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+    // Check if editing
+    const editId = new URLSearchParams(window.location.search).get('edit');
+    if (editId) {
+        const c = Store.getCampaignById(editId);
+        if (c) {
+            document.getElementById('pageTitle').textContent = 'Edit Campaign';
+            document.getElementById('submitBtn').textContent = 'Update Campaign';
+            document.getElementById('campaignId').value = c.id;
+            document.getElementById('campTitle').value = c.title;
+            document.getElementById('campCategory').value = c.category;
+            document.getElementById('campTarget').value = c.target;
+            document.getElementById('campDeadline').value = c.deadline;
+            document.getElementById('campDesc').value = c.desc;
+            if (c.mediaUrl) {
+                document.getElementById('mediaPreview').innerHTML = `<img src="${c.mediaUrl}" style="max-height:180px;border-radius:8px">`;
+            }
+        }
+    }
+
+    // Set min date to today
+    document.getElementById('campDeadline').min = new Date().toISOString().split('T')[0];
+
+    function previewMedia(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            document.getElementById('mediaPreview').innerHTML =
+                `<img src="${ev.target.result}" style="max-height:180px;border-radius:8px;margin-top:0.5rem;box-shadow:var(--shadow)">`;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        const user = Auth.getUser();
+        const isEdit = document.getElementById('campaignId').value;
+        const preview = document.getElementById('mediaPreview').querySelector('img');
+        const campaigns = Store.getCampaigns();
+
+        const data = {
+            id: isEdit ? parseInt(isEdit) : Date.now(),
+            title: document.getElementById('campTitle').value,
+            category: document.getElementById('campCategory').value,
+            target: parseFloat(document.getElementById('campTarget').value),
+            raised: 0,
+            deadline: document.getElementById('campDeadline').value,
+            desc: document.getElementById('campDesc').value,
+            mediaUrl: preview ? preview.src : null,
+            likes: 0,
+            donors: [],
+            comments: [],
+            ownerId: user.id
+        };
+
+        if (isEdit) {
+            const idx = campaigns.findIndex(c => c.id == isEdit);
+            const existing = campaigns[idx];
+            data.raised = existing.raised;
+            data.likes = existing.likes;
+            data.donors = existing.donors;
+            data.comments = existing.comments;
+            campaigns[idx] = data;
+            showToast('Campaign updated successfully!');
+        } else {
+            campaigns.unshift(data);
+            showToast('Campaign launched successfully! 🎉');
+        }
+
+        Store.saveCampaigns(campaigns);
+        setTimeout(() => window.location.href = 'index.html', 1000);
+    }
+</script>
+</body>
+</html>

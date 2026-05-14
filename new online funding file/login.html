@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundRise — Login / Register</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+<script src="auth.js"></script>
+<script>Auth.redirectIfLoggedIn();</script>
+
+<div class="auth-page">
+
+    <!-- Left decorative panel -->
+    <div class="auth-panel-left">
+        <div class="auth-brand">FundRise</div>
+        <h2>Every donation<br>tells a story.</h2>
+        <p>Join a growing community of changemakers. Create campaigns, support causes you care about, and track the impact of every contribution.</p>
+        <div class="auth-stats">
+            <div>
+                <div class="auth-stat-val">$2.4M+</div>
+                <div class="auth-stat-label">Total raised</div>
+            </div>
+            <div>
+                <div class="auth-stat-val">840+</div>
+                <div class="auth-stat-label">Campaigns funded</div>
+            </div>
+            <div>
+                <div class="auth-stat-val">12K+</div>
+                <div class="auth-stat-label">Donors</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="auth-panel-right">
+        <a href="index.html" class="back-link">← Back to Home</a>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="loginTab" onclick="switchTab('login')">Login</button>
+            <button class="auth-tab" id="registerTab" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="loginEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPass" placeholder="Enter your password" required>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-bottom:1.25rem">
+                <a href="#" onclick="showForgotToast()" style="font-size:0.88rem;color:var(--primary)">Forgot password?</a>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+            <p class="text-center mt-2" style="font-size:0.9rem;color:var(--text-muted)">
+                Don't have an account? <a href="#" onclick="switchTab('register')" style="color:var(--primary);font-weight:600">Register</a>
+            </p>
+        </form>
+
+        <!-- Register Form -->
+        <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="regName" placeholder="Your full name" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="regEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPass" placeholder="Choose a strong password" required minlength="6">
+                <span class="form-hint">Minimum 6 characters</span>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="regTerms" required>
+                <label for="regTerms">I agree to the <a href="faq.html">Terms & Conditions</a> and <a href="faq.html">Privacy Policy</a></label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Create Account</button>
+            <p class="text-center mt-2" style="font-size:0.9rem;color:var(--text-muted)">
+                Already have an account? <a href="#" onclick="switchTab('login')" style="color:var(--primary);font-weight:600">Login</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+    // Switch to register tab if URL has #register
+    if (window.location.hash === '#register') switchTab('register');
+
+    function switchTab(tab) {
+        document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+        document.getElementById('registerTab').classList.toggle('active', tab === 'register');
+        document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+        document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const user = { id: 'user_' + email, name: email.split('@')[0], email, role: 'USER' };
+        localStorage.setItem('fr_user', JSON.stringify(user));
+        showToast(`Welcome back, ${user.name}!`);
+        setTimeout(() => {
+            const redirect = new URLSearchParams(window.location.search).get('redirect');
+            window.location.href = redirect || 'index.html';
+        }, 800);
+    }
+
+    function handleRegister(e) {
+        e.preventDefault();
+        const name = document.getElementById('regName').value;
+        const email = document.getElementById('regEmail').value;
+        const user = { id: 'user_' + Date.now(), name, email, role: 'USER' };
+        localStorage.setItem('fr_user', JSON.stringify(user));
+        showToast(`Account created! Welcome, ${name}.`);
+        setTimeout(() => { window.location.href = 'index.html'; }, 800);
+    }
+
+    function showForgotToast() {
+        showToast('Password reset link sent to your email.', 'info');
+    }
+</script>
+</body>
+</html>

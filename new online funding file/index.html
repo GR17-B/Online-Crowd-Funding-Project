@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundRise — Home</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+
+<script src="auth.js"></script>
+<script>document.write(renderNavbar('home'));</script>
+
+<main class="page-wrapper">
+
+    <!-- Hero -->
+    <section class="hero">
+        <video autoplay muted loop playsinline class="hero-video">
+            <source src="assets/14615233_1080_1920_60fps.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Empower Change.<br>Fund Hope.</h1>
+            <p>Join thousands of donors making a real difference. Start your fundraising journey today.</p>
+            <div class="hero-btns">
+                <a href="create.html" class="btn btn-accent btn-lg">Start a Campaign</a>
+                <a href="faq.html" class="btn btn-lg" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.4)">How it Works</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search & Filter -->
+    <div class="search-bar mb-2">
+        <input type="text" id="searchInput" placeholder="🔍  Search campaigns…">
+        <select id="categoryFilter">
+            <option value="all">All Categories</option>
+            <option value="medical">Medical</option>
+            <option value="education">Education</option>
+            <option value="funeral">Funeral</option>
+            <option value="business">Business</option>
+            <option value="charity">Charity</option>
+        </select>
+    </div>
+
+    <!-- Campaign Grid -->
+    <div id="campaignGrid" class="campaign-grid"></div>
+
+</main>
+
+<footer class="site-footer">
+    <p>&copy; 2026 FundRise. All rights reserved. &nbsp;|&nbsp; <a href="faq.html">Terms</a> &nbsp;|&nbsp; <a href="faq.html">Privacy</a></p>
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+    const campaigns = Store.getCampaigns();
+    const grid = document.getElementById('campaignGrid');
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+
+    function renderCampaigns() {
+        const q = searchInput.value.toLowerCase();
+        const cat = categoryFilter.value;
+        const filtered = campaigns.filter(c => {
+            const matchQ = c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q);
+            const matchC = cat === 'all' || c.category === cat;
+            return matchQ && matchC;
+        });
+
+        if (!filtered.length) {
+            grid.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1;padding:3rem">No campaigns found.</p>';
+            return;
+        }
+
+        grid.innerHTML = filtered.map(c => {
+            const pct = Math.min(100, Math.round((c.raised / c.target) * 100));
+            const days = Math.max(0, Math.ceil((new Date(c.deadline) - new Date()) / 86400000));
+            const icons = { medical:'🏥', education:'📚', funeral:'🕊️', business:'💼', charity:'❤️' };
+            return `
+            <div class="campaign-card" onclick="openCampaign(${c.id})">
+                <div class="campaign-thumb">
+                    ${c.mediaUrl ? `<img src="${c.mediaUrl}" alt="${c.title}">` : icons[c.category] || '📷'}
+                </div>
+                <div class="campaign-body">
+                    <span class="badge badge-${c.category}">${c.category}</span>
+                    <h3 style="margin-top:0.5rem">${c.title}</h3>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+                    <div class="campaign-footer">
+                        <span class="campaign-meta"><strong style="color:var(--primary)">$${c.raised.toLocaleString()}</strong> raised</span>
+                        <span class="campaign-meta">${pct}% &bull; ${days}d left</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function openCampaign(id) {
+        Store.saveCurrentCampaignId(id);
+        window.location.href = 'campaign.html';
+    }
+
+    searchInput.addEventListener('input', renderCampaigns);
+    categoryFilter.addEventListener('change', renderCampaigns);
+    renderCampaigns();
+</script>
+</body>
+</html>
