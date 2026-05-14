@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundRise — Admin Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #0d1117;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle grid background */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(26,107,74,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26,107,74,0.06) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Glow orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+        }
+        .orb-1 { width: 400px; height: 400px; background: rgba(26,107,74,0.15); top: -100px; right: -100px; }
+        .orb-2 { width: 300px; height: 300px; background: rgba(244,166,35,0.08); bottom: -80px; left: -80px; }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
+            background: #161b22;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(26,107,74,0.2);
+            border: 1px solid rgba(26,107,74,0.4);
+            color: #4ade80;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-badge::before { content: '●'; font-size: 0.5rem; }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        h2 {
+            font-size: 1rem;
+            font-weight: 400;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 2rem;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .form-group { margin-bottom: 1.1rem; }
+
+        label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: 'DM Sans', sans-serif;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        input:focus {
+            border-color: rgba(26,107,74,0.6);
+            background: rgba(26,107,74,0.06);
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.2); }
+
+        .hint {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.25);
+            margin-top: 0.35rem;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.85rem;
+            background: #1a6b4a;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s, transform 0.15s;
+            letter-spacing: 0.02em;
+        }
+
+        .btn-login:hover { background: #124d36; transform: translateY(-1px); }
+        .btn-login:active { transform: translateY(0); }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.3);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: rgba(255,255,255,0.6); }
+
+        .error-msg {
+            background: rgba(217,79,61,0.15);
+            border: 1px solid rgba(217,79,61,0.3);
+            color: #f87171;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-msg.show { display: block; }
+
+        .security-note {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="login-card">
+    <div class="admin-badge">Admin Portal</div>
+    <div class="logo">FundRise</div>
+    <h2>Administrative Access</h2>
+
+    <div class="error-msg" id="errorMsg">Invalid credentials. Please try again.</div>
+
+    <form onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+            <label>Admin Username</label>
+            <input type="text" id="adminUser" placeholder="Enter admin username" required autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label>Admin Password</label>
+            <input type="password" id="adminPass" placeholder="Enter admin password" required>
+            <div class="hint">Default: username <strong style="color:rgba(255,255,255,0.4)">admin</strong> / password <strong style="color:rgba(255,255,255,0.4)">admin123</strong></div>
+        </div>
+        <button type="submit" class="btn-login">Access Dashboard →</button>
+    </form>
+
+    <a href="index.html" class="back-link">← Return to FundRise</a>
+
+    <div class="security-note">
+        🔒 This area is restricted to authorised personnel only. All activity is logged.
+    </div>
+</div>
+
+<script>
+    // Redirect if already admin
+    if (sessionStorage.getItem('fr_admin')) {
+        window.location.href = 'admin.html';
+    }
+
+    // Admin credentials (in production these would be server-validated)
+    const ADMIN_CREDENTIALS = [
+        { username: 'admin', password: 'admin123', name: 'Super Admin', role: 'superadmin' },
+        { username: 'moderator', password: 'mod456', name: 'Content Moderator', role: 'moderator' }
+    ];
+
+    function handleAdminLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('adminUser').value.trim();
+        const password = document.getElementById('adminPass').value;
+        const errorMsg = document.getElementById('errorMsg');
+
+        const match = ADMIN_CREDENTIALS.find(c => c.username === username && c.password === password);
+
+        if (match) {
+            sessionStorage.setItem('fr_admin', JSON.stringify({ username: match.username, name: match.name, role: match.role, loginTime: new Date().toISOString() }));
+            window.location.href = 'admin.html';
+        } else {
+            errorMsg.classList.add('show');
+            document.getElementById('adminPass').value = '';
+        }
+    }
+</script>
+</body>
+</html>

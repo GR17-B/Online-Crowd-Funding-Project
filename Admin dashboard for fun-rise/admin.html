@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundRise — Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #0d1117;
+            --surface:   #161b22;
+            --surface2:  #1c2128;
+            --border:    rgba(255,255,255,0.08);
+            --border2:   rgba(255,255,255,0.14);
+            --text:      #e6edf3;
+            --muted:     rgba(255,255,255,0.38);
+            --primary:   #1a6b4a;
+            --primary-l: rgba(26,107,74,0.18);
+            --primary-b: rgba(26,107,74,0.45);
+            --accent:    #f4a623;
+            --accent-l:  rgba(244,166,35,0.15);
+            --danger:    #d94f3d;
+            --danger-l:  rgba(217,79,61,0.15);
+            --warning:   #e5a308;
+            --warning-l: rgba(229,163,8,0.15);
+            --info:      #3b82f6;
+            --info-l:    rgba(59,130,246,0.15);
+            --success:   #22c55e;
+            --success-l: rgba(34,197,94,0.15);
+            --sidebar-w: 240px;
+            --header-h:  60px;
+            --radius:    10px;
+            --radius-lg: 14px;
+        }
+
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s;
+        }
+
+        .sidebar-logo {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .sidebar-logo-text { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--text); }
+
+        .sidebar-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: var(--primary-l);
+            color: #4ade80;
+            border: 1px solid var(--primary-b);
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+        }
+
+        .sidebar-admin-info {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-admin-name { font-weight: 600; font-size: 0.9rem; }
+        .sidebar-admin-role { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; text-transform: capitalize; }
+
+        nav.sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+
+        .nav-section-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            padding: 0.75rem 1.5rem 0.3rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.6rem 1.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--muted);
+            border-left: 3px solid transparent;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+        .nav-item.active { color: #4ade80; background: var(--primary-l); border-left-color: #4ade80; }
+
+        .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 0.55rem;
+            background: rgba(217,79,61,0.12);
+            color: #f87171;
+            border: 1px solid rgba(217,79,61,0.25);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+
+        .btn-logout:hover { background: rgba(217,79,61,0.22); }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: var(--header-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .topbar-title { font-size: 1.05rem; font-weight: 600; }
+        .topbar-time { font-size: 0.82rem; color: var(--muted); }
+
+        .page-content { padding: 2rem; flex: 1; }
+
+        /* ── PANELS ── */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ── STAT CARDS ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            transition: border-color 0.2s;
+        }
+
+        .stat-card:hover { border-color: var(--border2); }
+
+        .stat-label { font-size: 0.78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+        .stat-value { font-size: 1.8rem; font-family: 'Playfair Display', serif; font-weight: 700; }
+        .stat-sub { font-size: 0.78rem; color: var(--muted); }
+        .stat-icon { font-size: 1.3rem; margin-bottom: 0.25rem; }
+
+        .stat-card.green .stat-value { color: var(--success); }
+        .stat-card.amber .stat-value { color: var(--accent); }
+        .stat-card.red   .stat-value { color: var(--danger); }
+        .stat-card.blue  .stat-value { color: var(--info); }
+
+        /* ── SECTION CARD ── */
+        .section-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .section-title { font-size: 0.95rem; font-weight: 600; }
+
+        /* ── TABLE ── */
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th {
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .admin-table td {
+            padding: 0.85rem 1.5rem;
+            font-size: 0.88rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        /* ── BADGES ── */
+        .pill {
+            display: inline-block;
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .pill-green   { background: var(--success-l); color: var(--success); }
+        .pill-red     { background: var(--danger-l);  color: #f87171; }
+        .pill-amber   { background: var(--warning-l); color: var(--accent); }
+        .pill-blue    { background: var(--info-l);    color: #60a5fa; }
+        .pill-gray    { background: rgba(255,255,255,0.07); color: var(--muted); }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.35rem 0.8rem;
+            border-radius: 7px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-approve { background: var(--success-l); color: var(--success); border-color: rgba(34,197,94,0.25); }
+        .btn-approve:hover { background: rgba(34,197,94,0.25); }
+
+        .btn-reject  { background: var(--danger-l);  color: #f87171; border-color: rgba(217,79,61,0.25); }
+        .btn-reject:hover { background: rgba(217,79,61,0.25); }
+
+        .btn-warn    { background: var(--warning-l); color: var(--accent); border-color: rgba(229,163,8,0.25); }
+        .btn-warn:hover { background: rgba(229,163,8,0.25); }
+
+        .btn-info    { background: var(--info-l); color: #60a5fa; border-color: rgba(59,130,246,0.25); }
+        .btn-info:hover { background: rgba(59,130,246,0.25); }
+
+        .btn-ghost   { background: rgba(255,255,255,0.05); color: var(--muted); border-color: var(--border); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+        .btn-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+        /* ── SEARCH / FILTER ── */
+        .filter-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-row input,
+        .filter-row select {
+            padding: 0.45rem 0.9rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-row input:focus,
+        .filter-row select:focus { border-color: var(--primary-b); }
+        .filter-row input::placeholder { color: var(--muted); }
+        .filter-row select option { background: var(--surface2); }
+
+        /* ── ANALYTICS ── */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-bar-wrap { padding: 1.25rem 1.5rem; }
+
+        .chart-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.85rem;
+            font-size: 0.85rem;
+        }
+
+        .chart-bar-label { width: 90px; color: var(--muted); flex-shrink: 0; text-align: right; font-size: 0.8rem; }
+        .chart-bar-track { flex: 1; height: 10px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+        .chart-bar-fill  { height: 100%; border-radius: 999px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+        .chart-bar-val   { width: 50px; text-align: right; font-weight: 600; font-size: 0.8rem; }
+
+        .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 2rem; padding: 1.5rem; flex-wrap: wrap; }
+
+        .donut-legend { display: flex; flex-direction: column; gap: 0.6rem; }
+        .legend-item  { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; }
+        .legend-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── MODAL ── */
+        .modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-backdrop.open { display: flex; }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+        }
+
+        .modal h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .modal p  { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+        .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: wrap; }
+        .modal-btn-cancel { padding: 0.55rem 1.2rem; background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; }
+        .modal-btn-confirm { padding: 0.55rem 1.2rem; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; border: none; }
+
+        /* ── TOAST ── */
+        #toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast { padding: 0.75rem 1.2rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; background: var(--surface2); color: var(--text); border: 1px solid var(--border2); border-left: 4px solid var(--primary); box-shadow: 0 8px 32px rgba(0,0,0,0.4); opacity: 0; transform: translateX(16px); transition: opacity 0.3s, transform 0.3s; max-width: 300px; }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.danger { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        .toast.info { border-left-color: var(--info); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .analytics-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <span class="sidebar-logo-text">FundRise</span>
+        <span class="sidebar-badge">Admin</span>
+    </div>
+
+    <div class="sidebar-admin-info">
+        <div class="sidebar-admin-name" id="adminNameDisplay">—</div>
+        <div class="sidebar-admin-role" id="adminRoleDisplay">—</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Overview</div>
+        <div class="nav-item active" onclick="switchPanel('overview', this)">
+            <span class="icon">📊</span> Dashboard
+        </div>
+
+        <div class="nav-section-label">Content</div>
+        <div class="nav-item" onclick="switchPanel('campaigns', this)">
+            <span class="icon">📋</span> Campaigns
+        </div>
+        <div class="nav-item" onclick="switchPanel('reports', this)">
+            <span class="icon">🚩</span> Reports
+            <span class="nav-badge" id="reportsBadge">3</span>
+        </div>
+
+        <div class="nav-section-label">People</div>
+        <div class="nav-item" onclick="switchPanel('users', this)">
+            <span class="icon">👥</span> Users
+        </div>
+        <div class="nav-item" onclick="switchPanel('withdrawals', this)">
+            <span class="icon">💸</span> Withdrawals
+            <span class="nav-badge" id="withdrawBadge">2</span>
+        </div>
+
+        <div class="nav-section-label">Insights</div>
+        <div class="nav-item" onclick="switchPanel('analytics', this)">
+            <span class="icon">📈</span> Analytics
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <button class="btn-logout" onclick="adminLogout()">Sign Out</button>
+    </div>
+</aside>
+
+<!-- Main -->
+<div class="main-content">
+    <div class="topbar">
+        <div style="display:flex;align-items:center;gap:1rem">
+            <button onclick="document.getElementById('sidebar').classList.toggle('open')"
+                style="display:none;background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer" id="hamburger">☰</button>
+            <span class="topbar-title" id="topbarTitle">Dashboard</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem">
+            <span class="topbar-time" id="clockEl"></span>
+            <a href="index.html" target="_blank" style="font-size:0.8rem;color:var(--muted);text-decoration:none">↗ View Site</a>
+        </div>
+    </div>
+
+    <div class="page-content">
+
+        <!-- ── OVERVIEW ── -->
+        <div class="panel active" id="panel-overview">
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem" class="overview-split">
+
+                <!-- Recent campaigns -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <span class="section-title">Recent Campaigns</span>
+                        <button class="btn btn-ghost" onclick="switchPanel('campaigns', document.querySelector('.nav-item:nth-child(4))'))">View All</button>
+                    </div>
+                    <div id="overviewCampaigns"></div>
+                </div>
+
+                <!-- Pending actions -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <span class="section-title">Pending Actions</span>
+                    </div>
+                    <div id="overviewPending" style="padding:1rem 1.5rem"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── CAMPAIGNS ── -->
+        <div class="panel" id="panel-campaigns">
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">All Campaigns</span>
+                    <div class="filter-row">
+                        <input type="text" id="campSearch" placeholder="Search…" oninput="renderCampaignsTable()">
+                        <select id="campStatusFilter" onchange="renderCampaignsTable()">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="ended">Ended</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                        <select id="campCatFilter" onchange="renderCampaignsTable()">
+                            <option value="all">All Categories</option>
+                            <option value="medical">Medical</option>
+                            <option value="education">Education</option>
+                            <option value="funeral">Funeral</option>
+                            <option value="business">Business</option>
+                            <option value="charity">Charity</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Category</th>
+                                <th>Progress</th>
+                                <th>Deadline</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaignsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── REPORTS ── -->
+        <div class="panel" id="panel-reports">
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Flagged Campaigns & Reports</span>
+                    <select id="reportStatusFilter" onchange="renderReports()">
+                        <option value="all">All Reports</option>
+                        <option value="pending">Pending</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="dismissed">Dismissed</option>
+                    </select>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Reported By</th>
+                                <th>Reason</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── USERS ── -->
+        <div class="panel" id="panel-users">
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">User Management</span>
+                    <div class="filter-row">
+                        <input type="text" id="userSearch" placeholder="Search users…" oninput="renderUsers()">
+                        <select id="userRoleFilter" onchange="renderUsers()">
+                            <option value="all">All Roles</option>
+                            <option value="USER">User</option>
+                            <option value="MODERATOR">Moderator</option>
+                            <option value="BANNED">Banned</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Campaigns</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── WITHDRAWALS ── -->
+        <div class="panel" id="panel-withdrawals">
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Withdrawal Requests</span>
+                    <select id="withdrawFilter" onchange="renderWithdrawals()">
+                        <option value="all">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Campaign</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Account Details</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawalsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ANALYTICS ── -->
+        <div class="panel" id="panel-analytics">
+            <div class="stats-grid" id="analyticsStats"></div>
+
+            <div class="analytics-grid">
+                <!-- Category breakdown -->
+                <div class="section-card">
+                    <div class="section-header"><span class="section-title">Campaigns by Category</span></div>
+                    <div class="chart-bar-wrap" id="categoryChart"></div>
+                </div>
+
+                <!-- Funding status donut -->
+                <div class="section-card">
+                    <div class="section-header"><span class="section-title">Funding Status</span></div>
+                    <div class="donut-wrap">
+                        <svg width="140" height="140" viewBox="0 0 140 140" id="donutSvg"></svg>
+                        <div class="donut-legend" id="donutLegend"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top campaigns -->
+            <div class="section-card">
+                <div class="section-header"><span class="section-title">Top Performing Campaigns</span></div>
+                <div style="overflow-x:auto">
+                    <table class="admin-table">
+                        <thead><tr><th>Campaign</th><th>Category</th><th>Raised</th><th>Target</th><th>% Funded</th><th>Donors</th></tr></thead>
+                        <tbody id="topCampaignsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /page-content -->
+</div><!-- /main-content -->
+
+<!-- Confirm Modal -->
+<div class="modal-backdrop" id="confirmModal">
+    <div class="modal">
+        <h3 id="modalTitle">Confirm Action</h3>
+        <p id="modalBody">Are you sure?</p>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="modal-btn-confirm" id="modalConfirmBtn" onclick="modalCallback && modalCallback()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ── AUTH GUARD ──────────────────────────────────────────
+const adminSession = JSON.parse(sessionStorage.getItem('fr_admin') || 'null');
+if (!adminSession) { window.location.href = 'admin-login.html'; }
+
+document.getElementById('adminNameDisplay').textContent = adminSession?.name || 'Admin';
+document.getElementById('adminRoleDisplay').textContent = adminSession?.role || 'admin';
+
+function adminLogout() {
+    sessionStorage.removeItem('fr_admin');
+    window.location.href = 'admin-login.html';
+}
+
+// ── CLOCK ──────────────────────────────────────────────
+function updateClock() {
+    document.getElementById('clockEl').textContent = new Date().toLocaleString('en-GB', { weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// ── MOCK DATA ──────────────────────────────────────────
+function getCampaigns() {
+    return JSON.parse(localStorage.getItem('fr_campaigns')) || [
+        { id:1, title:'Heart Surgery for Leo', category:'medical', target:10000, raised:4200, deadline:'2026-06-15', desc:'Urgent cardiac procedure for 6-year-old Leo.', donors:[{name:'Alice',amount:500},{name:'Anonymous',amount:200}], comments:[{user:'John',text:'Praying!',date:'2026-04-01'}], ownerId:'user1', status:'active', likes:42 },
+        { id:2, title:'Community Library Build', category:'education', target:25000, raised:18000, deadline:'2026-09-01', desc:'Building a safe learning space.', donors:[], comments:[], ownerId:'user2', status:'active', likes:89 },
+        { id:3, title:'Funeral Support — Mensah Family', category:'funeral', target:5000, raised:3100, deadline:'2026-05-01', desc:'Cover funeral costs.', donors:[], comments:[], ownerId:'user3', status:'active', likes:31 },
+        { id:4, title:'Local Bakery Startup', category:'business', target:8000, raised:2200, deadline:'2026-07-20', desc:'Help Afia launch her bakery.', donors:[], comments:[], ownerId:'user4', status:'active', likes:17 }
+    ];
+}
+
+function saveCampaigns(c) { localStorage.setItem('fr_campaigns', JSON.stringify(c)); }
+
+const mockUsers = [
+    { id:'user1', name:'Alice Mensah', email:'alice@example.com', role:'USER', joined:'2026-01-12' },
+    { id:'user2', name:'Kwame Asante', email:'kwame@example.com', role:'USER', joined:'2026-02-03' },
+    { id:'user3', name:'Grace Owusu', email:'grace@example.com', role:'MODERATOR', joined:'2025-11-20' },
+    { id:'user4', name:'Afia Boateng', email:'afia@example.com', role:'USER', joined:'2026-03-08' },
+    { id:'user5', name:'Yaw Darko', email:'yaw@example.com', role:'BANNED', joined:'2026-01-30' }
+];
+
+const mockReports = [
+    { id:1, campaignId:1, campaignTitle:'Heart Surgery for Leo', reportedBy:'Yaw Darko', reason:'Suspicious — cannot verify medical claim.', date:'2026-04-05', status:'pending' },
+    { id:2, campaignId:4, campaignTitle:'Local Bakery Startup', reportedBy:'Anonymous', reason:'Photos appear to be stock images.', date:'2026-04-06', status:'pending' },
+    { id:3, campaignId:2, campaignTitle:'Community Library Build', reportedBy:'User123', reason:'Duplicate campaign already exists.', date:'2026-03-28', status:'resolved' }
+];
+
+const mockWithdrawals = [
+    { id:1, user:'Alice Mensah', campaignTitle:'Heart Surgery for Leo', amount:2000, method:'Mobile Money', details:'MTN: 024 111 2233 — Alice Mensah', date:'2026-04-08', status:'pending' },
+    { id:2, user:'Grace Owusu', campaignTitle:'Funeral Support — Mensah Family', amount:1500, method:'Bank Transfer', details:'GCB Acct: 1234567890 — Grace Owusu', date:'2026-04-07', status:'pending' },
+    { id:3, user:'Kwame Asante', campaignTitle:'Community Library Build', amount:5000, method:'Bank Transfer', details:'Absa Acct: 9876543210 — Kwame Asante', date:'2026-04-01', status:'approved' }
+];
+
+// ── NAVIGATION ─────────────────────────────────────────
+const panelTitles = { overview:'Dashboard', campaigns:'Campaigns', reports:'Reports & Flags', users:'User Management', withdrawals:'Withdrawals', analytics:'Analytics' };
+
+function switchPanel(name, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if (el) el.classList.add('active');
+    document.getElementById('topbarTitle').textContent = panelTitles[name] || name;
+    renderPanel(name);
+    document.getElementById('sidebar').classList.remove('open');
+}
+
+function renderPanel(name) {
+    if (name === 'overview')    renderOverview();
+    if (name === 'campaigns')   renderCampaignsTable();
+    if (name === 'reports')     renderReports();
+    if (name === 'users')       renderUsers();
+    if (name === 'withdrawals') renderWithdrawals();
+    if (name === 'analytics')   renderAnalytics();
+}
+
+// ── OVERVIEW ───────────────────────────────────────────
+function renderOverview() {
+    const camps = getCampaigns();
+    const totalRaised = camps.reduce((s,c) => s + c.raised, 0);
+    const totalDonors = camps.reduce((s,c) => s + (c.donors||[]).length, 0);
+    const pending = mockReports.filter(r => r.status === 'pending').length + mockWithdrawals.filter(w => w.status === 'pending').length;
+
+    document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card green"><div class="stat-icon">💰</div><div class="stat-label">Total Raised</div><div class="stat-value">$${totalRaised.toLocaleString()}</div><div class="stat-sub">across all campaigns</div></div>
+        <div class="stat-card blue"><div class="stat-icon">📋</div><div class="stat-label">Campaigns</div><div class="stat-value">${camps.length}</div><div class="stat-sub">${camps.filter(c=>c.status==='active'||!c.status).length} active</div></div>
+        <div class="stat-card amber"><div class="stat-icon">👥</div><div class="stat-label">Total Donors</div><div class="stat-value">${totalDonors}</div><div class="stat-sub">unique contributions</div></div>
+        <div class="stat-card red"><div class="stat-icon">⚠️</div><div class="stat-label">Pending Actions</div><div class="stat-value">${pending}</div><div class="stat-sub">require attention</div></div>
+        <div class="stat-card"><div class="stat-icon">🚩</div><div class="stat-label">Open Reports</div><div class="stat-value">${mockReports.filter(r=>r.status==='pending').length}</div><div class="stat-sub">flagged campaigns</div></div>
+        <div class="stat-card"><div class="stat-icon">💸</div><div class="stat-label">Pending Withdrawals</div><div class="stat-value">${mockWithdrawals.filter(w=>w.status==='pending').length}</div><div class="stat-sub">awaiting approval</div></div>`;
+
+    // Recent campaigns
+    document.getElementById('overviewCampaigns').innerHTML = `
+        <table class="admin-table">${camps.slice(0,4).map(c => {
+            const pct = Math.min(100, Math.round((c.raised/c.target)*100));
+            return `<tr>
+                <td><div style="font-weight:600;font-size:0.85rem">${c.title}</div><div style="font-size:0.75rem;color:var(--muted)">${c.category}</div></td>
+                <td style="font-size:0.82rem">$${c.raised.toLocaleString()}<div style="width:80px;height:4px;background:rgba(255,255,255,0.07);border-radius:99px;margin-top:4px"><div style="width:${pct}%;height:100%;background:#22c55e;border-radius:99px"></div></div></td>
+                <td><span class="pill pill-green">Active</span></td>
+            </tr>`;
+        }).join('')}</table>`;
+
+    // Pending actions
+    document.getElementById('overviewPending').innerHTML = [
+        ...mockReports.filter(r=>r.status==='pending').map(r =>
+            `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-size:0.85rem;font-weight:600">🚩 ${r.campaignTitle}</div><div style="font-size:0.75rem;color:var(--muted)">${r.reason.substring(0,50)}…</div></div>
+                <span class="pill pill-amber">Report</span>
+            </div>`),
+        ...mockWithdrawals.filter(w=>w.status==='pending').map(w =>
+            `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-size:0.85rem;font-weight:600">💸 $${w.amount} — ${w.user}</div><div style="font-size:0.75rem;color:var(--muted)">${w.campaignTitle}</div></div>
+                <span class="pill pill-blue">Withdrawal</span>
+            </div>`)
+    ].join('') || '<p style="color:var(--muted);font-size:0.88rem;padding:0.5rem 0">No pending actions.</p>';
+}
+
+// ── CAMPAIGNS TABLE ────────────────────────────────────
+function renderCampaignsTable() {
+    const camps = getCampaigns();
+    const q = (document.getElementById('campSearch')?.value||'').toLowerCase();
+    const sf = document.getElementById('campStatusFilter')?.value || 'all';
+    const cf = document.getElementById('campCatFilter')?.value || 'all';
+
+    const filtered = camps.filter(c => {
+        const matchQ = !q || c.title.toLowerCase().includes(q);
+        const status = c.status || 'active';
+        const matchS = sf === 'all' || status === sf;
+        const matchC = cf === 'all' || c.category === cf;
+        return matchQ && matchS && matchC;
+    });
+
+    document.getElementById('campaignsTableBody').innerHTML = filtered.map(c => {
+        const pct = Math.min(100, Math.round((c.raised/c.target)*100));
+        const days = Math.max(0, Math.ceil((new Date(c.deadline)-new Date())/86400000));
+        const status = c.status || 'active';
+        const pillMap = { active:'pill-green', ended:'pill-gray', suspended:'pill-red' };
+        return `<tr>
+            <td><div style="font-weight:600;max-width:200px">${c.title}</div><div style="font-size:0.75rem;color:var(--muted)">ID #${c.id} &bull; ${(c.donors||[]).length} donors</div></td>
+            <td><span class="pill pill-blue" style="text-transform:capitalize">${c.category}</span></td>
+            <td>
+                <div style="font-size:0.82rem;margin-bottom:3px">$${c.raised.toLocaleString()} / $${c.target.toLocaleString()} <span style="color:var(--muted)">(${pct}%)</span></div>
+                <div style="width:120px;height:5px;background:rgba(255,255,255,0.07);border-radius:99px"><div style="width:${pct}%;height:100%;background:#22c55e;border-radius:99px"></div></div>
+            </td>
+            <td style="font-size:0.82rem">${c.deadline}<br><span style="color:var(--muted);font-size:0.75rem">${days}d left</span></td>
+            <td><span class="pill ${pillMap[status]||'pill-gray'}">${status}</span></td>
+            <td>
+                <div class="btn-row">
+                    ${status !== 'suspended'
+                        ? `<button class="btn btn-warn" onclick="suspendCampaign(${c.id})">Suspend</button>`
+                        : `<button class="btn btn-approve" onclick="restoreCampaign(${c.id})">Restore</button>`}
+                    <button class="btn btn-reject" onclick="deleteCampaign(${c.id})">Delete</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No campaigns found.</td></tr>`;
+}
+
+function suspendCampaign(id) {
+    showConfirm('Suspend Campaign', 'This campaign will be hidden from public view. The owner will be notified.', 'Suspend', '#e5a308', () => {
+        const camps = getCampaigns();
+        const idx = camps.findIndex(c => c.id == id);
+        camps[idx].status = 'suspended';
+        saveCampaigns(camps);
+        toast('Campaign suspended.');
+        renderCampaignsTable();
+    });
+}
+
+function restoreCampaign(id) {
+    const camps = getCampaigns();
+    const idx = camps.findIndex(c => c.id == id);
+    camps[idx].status = 'active';
+    saveCampaigns(camps);
+    toast('Campaign restored.');
+    renderCampaignsTable();
+}
+
+function deleteCampaign(id) {
+    showConfirm('Delete Campaign', 'This action is permanent and cannot be undone. All donations and comments will be lost.', 'Delete', '#d94f3d', () => {
+        const camps = getCampaigns().filter(c => c.id != id);
+        saveCampaigns(camps);
+        toast('Campaign deleted.', 'danger');
+        renderCampaignsTable();
+    });
+}
+
+// ── REPORTS ────────────────────────────────────────────
+function renderReports() {
+    const f = document.getElementById('reportStatusFilter')?.value || 'all';
+    const filtered = f === 'all' ? mockReports : mockReports.filter(r => r.status === f);
+    const pillMap = { pending:'pill-amber', resolved:'pill-green', dismissed:'pill-gray' };
+
+    document.getElementById('reportsTableBody').innerHTML = filtered.map(r => `<tr>
+        <td style="font-weight:600;font-size:0.88rem">${r.campaignTitle}</td>
+        <td style="font-size:0.85rem;color:var(--muted)">${r.reportedBy}</td>
+        <td style="font-size:0.82rem;max-width:200px">${r.reason}</td>
+        <td style="font-size:0.82rem;color:var(--muted)">${r.date}</td>
+        <td><span class="pill ${pillMap[r.status]||'pill-gray'}">${r.status}</span></td>
+        <td>
+            ${r.status === 'pending' ? `
+            <div class="btn-row">
+                <button class="btn btn-approve" onclick="resolveReport(${r.id})">Resolve</button>
+                <button class="btn btn-ghost" onclick="dismissReport(${r.id})">Dismiss</button>
+                <button class="btn btn-reject" onclick="suspendFromReport(${r.campaignId})">Suspend</button>
+            </div>` : `<span style="font-size:0.8rem;color:var(--muted)">Closed</span>`}
+        </td>
+    </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No reports.</td></tr>`;
+
+    document.getElementById('reportsBadge').textContent = mockReports.filter(r=>r.status==='pending').length;
+}
+
+function resolveReport(id) {
+    const r = mockReports.find(r => r.id == id);
+    if (r) { r.status = 'resolved'; toast('Report marked as resolved.'); renderReports(); }
+}
+
+function dismissReport(id) {
+    const r = mockReports.find(r => r.id == id);
+    if (r) { r.status = 'dismissed'; toast('Report dismissed.', 'warning'); renderReports(); }
+}
+
+function suspendFromReport(campaignId) {
+    showConfirm('Suspend Campaign', 'Suspend this campaign based on the report?', 'Suspend', '#e5a308', () => {
+        const camps = getCampaigns();
+        const idx = camps.findIndex(c => c.id == campaignId);
+        if (idx > -1) { camps[idx].status = 'suspended'; saveCampaigns(camps); }
+        toast('Campaign suspended from report.');
+        renderReports();
+    });
+}
+
+// ── USERS ──────────────────────────────────────────────
+function renderUsers() {
+    const q = (document.getElementById('userSearch')?.value||'').toLowerCase();
+    const rf = document.getElementById('userRoleFilter')?.value || 'all';
+    const camps = getCampaigns();
+
+    const filtered = mockUsers.filter(u => {
+        const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+        const matchR = rf === 'all' || u.role === rf;
+        return matchQ && matchR;
+    });
+
+    const pillMap = { USER:'pill-blue', MODERATOR:'pill-green', BANNED:'pill-red' };
+
+    document.getElementById('usersTableBody').innerHTML = filtered.map(u => {
+        const userCamps = camps.filter(c => c.ownerId === u.id).length;
+        return `<tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:0.6rem">
+                    <div style="width:32px;height:32px;border-radius:50%;background:var(--primary-l);border:1px solid var(--primary-b);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:#4ade80;flex-shrink:0">${u.name.charAt(0)}</div>
+                    <div style="font-weight:600;font-size:0.88rem">${u.name}</div>
+                </div>
+            </td>
+            <td style="font-size:0.82rem;color:var(--muted)">${u.email}</td>
+            <td><span class="pill ${pillMap[u.role]||'pill-gray'}">${u.role}</span></td>
+            <td style="font-size:0.85rem">${userCamps}</td>
+            <td style="font-size:0.82rem;color:var(--muted)">${u.joined}</td>
+            <td>
+                <div class="btn-row">
+                    ${u.role !== 'MODERATOR' && u.role !== 'BANNED'
+                        ? `<button class="btn btn-approve" onclick="promoteUser('${u.id}')">Promote</button>` : ''}
+                    ${u.role !== 'BANNED'
+                        ? `<button class="btn btn-reject" onclick="banUser('${u.id}')">Ban</button>`
+                        : `<button class="btn btn-ghost" onclick="unbanUser('${u.id}')">Unban</button>`}
+                </div>
+            </td>
+        </tr>`;
+    }).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No users found.</td></tr>`;
+}
+
+function promoteUser(id) {
+    const u = mockUsers.find(u => u.id === id);
+    if (u) { u.role = 'MODERATOR'; toast(`${u.name} promoted to Moderator.`); renderUsers(); }
+}
+
+function banUser(id) {
+    const u = mockUsers.find(u => u.id === id);
+    showConfirm('Ban User', `Ban ${u?.name}? They will lose access to their account immediately.`, 'Ban', '#d94f3d', () => {
+        if (u) { u.role = 'BANNED'; toast(`${u.name} has been banned.`, 'danger'); renderUsers(); }
+    });
+}
+
+function unbanUser(id) {
+    const u = mockUsers.find(u => u.id === id);
+    if (u) { u.role = 'USER'; toast(`${u.name}'s account restored.`); renderUsers(); }
+}
+
+// ── WITHDRAWALS ────────────────────────────────────────
+function renderWithdrawals() {
+    const f = document.getElementById('withdrawFilter')?.value || 'all';
+    const filtered = f === 'all' ? mockWithdrawals : mockWithdrawals.filter(w => w.status === f);
+    const pillMap = { pending:'pill-amber', approved:'pill-green', rejected:'pill-red' };
+
+    document.getElementById('withdrawalsTableBody').innerHTML = filtered.map(w => `<tr>
+        <td style="font-weight:600;font-size:0.88rem">${w.user}</td>
+        <td style="font-size:0.82rem;max-width:160px">${w.campaignTitle}</td>
+        <td style="font-weight:700;color:#22c55e">$${w.amount.toLocaleString()}</td>
+        <td style="font-size:0.82rem">${w.method}</td>
+        <td style="font-size:0.78rem;color:var(--muted);max-width:160px">${w.details}</td>
+        <td style="font-size:0.82rem;color:var(--muted)">${w.date}</td>
+        <td><span class="pill ${pillMap[w.status]||'pill-gray'}">${w.status}</span></td>
+        <td>
+            ${w.status === 'pending' ? `
+            <div class="btn-row">
+                <button class="btn btn-approve" onclick="approveWithdrawal(${w.id})">Approve</button>
+                <button class="btn btn-reject" onclick="rejectWithdrawal(${w.id})">Reject</button>
+            </div>` : `<span style="font-size:0.8rem;color:var(--muted)">Closed</span>`}
+        </td>
+    </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No withdrawal requests.</td></tr>`;
+
+    document.getElementById('withdrawBadge').textContent = mockWithdrawals.filter(w=>w.status==='pending').length;
+}
+
+function approveWithdrawal(id) {
+    showConfirm('Approve Withdrawal', 'Confirm and release funds to the user\'s registered account?', 'Approve', '#22c55e', () => {
+        const w = mockWithdrawals.find(w => w.id == id);
+        if (w) { w.status = 'approved'; toast(`$${w.amount} withdrawal approved for ${w.user}.`); renderWithdrawals(); }
+    });
+}
+
+function rejectWithdrawal(id) {
+    const w = mockWithdrawals.find(w => w.id == id);
+    if (w) { w.status = 'rejected'; toast(`Withdrawal rejected.`, 'danger'); renderWithdrawals(); }
+}
+
+// ── ANALYTICS ──────────────────────────────────────────
+function renderAnalytics() {
+    const camps = getCampaigns();
+    const totalRaised = camps.reduce((s,c) => s+c.raised, 0);
+    const totalTarget = camps.reduce((s,c) => s+c.target, 0);
+    const totalDonors = camps.reduce((s,c) => s+(c.donors||[]).length, 0);
+    const avgFunding  = camps.length ? Math.round((totalRaised/totalTarget)*100) : 0;
+
+    document.getElementById('analyticsStats').innerHTML = `
+        <div class="stat-card green"><div class="stat-icon">💰</div><div class="stat-label">Total Raised</div><div class="stat-value">$${totalRaised.toLocaleString()}</div></div>
+        <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-label">Total Target</div><div class="stat-value">$${totalTarget.toLocaleString()}</div></div>
+        <div class="stat-card blue"><div class="stat-icon">👥</div><div class="stat-label">Total Donors</div><div class="stat-value">${totalDonors}</div></div>
+        <div class="stat-card amber"><div class="stat-icon">📊</div><div class="stat-label">Avg Funding</div><div class="stat-value">${avgFunding}%</div></div>`;
+
+    // Category bar chart
+    const cats = ['medical','education','funeral','business','charity'];
+    const catColors = { medical:'#f87171', education:'#60a5fa', funeral:'#c084fc', business:'#fbbf24', charity:'#4ade80' };
+    const catTotals = {};
+    cats.forEach(cat => { catTotals[cat] = camps.filter(c=>c.category===cat).reduce((s,c)=>s+c.raised,0); });
+    const maxCat = Math.max(...Object.values(catTotals), 1);
+
+    document.getElementById('categoryChart').innerHTML = cats.map(cat => `
+        <div class="chart-bar-row">
+            <div class="chart-bar-label">${cat}</div>
+            <div class="chart-bar-track">
+                <div class="chart-bar-fill" style="width:${Math.round((catTotals[cat]/maxCat)*100)}%;background:${catColors[cat]}"></div>
+            </div>
+            <div class="chart-bar-val" style="color:${catColors[cat]}">$${catTotals[cat].toLocaleString()}</div>
+        </div>`).join('');
+
+    // Donut chart
+    const funded    = camps.filter(c => (c.raised/c.target) >= 1).length;
+    const onTrack   = camps.filter(c => (c.raised/c.target) >= 0.5 && (c.raised/c.target) < 1).length;
+    const struggling= camps.filter(c => (c.raised/c.target) < 0.5).length;
+    const donutData = [
+        { label:'Fully Funded', count:funded,     color:'#22c55e' },
+        { label:'On Track',     count:onTrack,     color:'#60a5fa' },
+        { label:'Struggling',   count:struggling,  color:'#f87171' }
+    ];
+    const total = donutData.reduce((s,d) => s+d.count, 0) || 1;
+    let startAngle = -Math.PI/2;
+    const cx=70, cy=70, r=50, innerR=30;
+    const paths = donutData.map(d => {
+        const angle = (d.count/total)*2*Math.PI;
+        const x1=cx+r*Math.cos(startAngle), y1=cy+r*Math.sin(startAngle);
+        const endA=startAngle+angle;
+        const x2=cx+r*Math.cos(endA), y2=cy+r*Math.sin(endA);
+        const ix1=cx+innerR*Math.cos(startAngle), iy1=cy+innerR*Math.sin(startAngle);
+        const ix2=cx+innerR*Math.cos(endA), iy2=cy+innerR*Math.sin(endA);
+        const largeArc=angle>Math.PI?1:0;
+        const path=`M${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} L${ix2},${iy2} A${innerR},${innerR} 0 ${largeArc},0 ${ix1},${iy1} Z`;
+        startAngle=endA;
+        return `<path d="${path}" fill="${d.color}" opacity="0.85"/>`;
+    }).join('');
+    document.getElementById('donutSvg').innerHTML = paths + `<text x="70" y="67" text-anchor="middle" font-size="16" font-weight="700" fill="#e6edf3">${camps.length}</text><text x="70" y="80" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.4)">campaigns</text>`;
+    document.getElementById('donutLegend').innerHTML = donutData.map(d => `<div class="legend-item"><div class="legend-dot" style="background:${d.color}"></div><span style="color:var(--muted);font-size:0.82rem">${d.label} <strong style="color:var(--text)">(${d.count})</strong></span></div>`).join('');
+
+    // Top campaigns table
+    const sorted = [...camps].sort((a,b) => b.raised-a.raised).slice(0,5);
+    document.getElementById('topCampaignsBody').innerHTML = sorted.map(c => {
+        const pct = Math.min(100, Math.round((c.raised/c.target)*100));
+        return `<tr>
+            <td style="font-weight:600;font-size:0.88rem">${c.title}</td>
+            <td><span class="pill pill-blue" style="text-transform:capitalize">${c.category}</span></td>
+            <td style="color:#22c55e;font-weight:700">$${c.raised.toLocaleString()}</td>
+            <td style="color:var(--muted);font-size:0.85rem">$${c.target.toLocaleString()}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:0.5rem">
+                    <div style="width:60px;height:5px;background:rgba(255,255,255,0.07);border-radius:99px"><div style="width:${pct}%;height:100%;background:#22c55e;border-radius:99px"></div></div>
+                    <span style="font-size:0.82rem">${pct}%</span>
+                </div>
+            </td>
+            <td style="font-size:0.85rem">${(c.donors||[]).length}</td>
+        </tr>`;
+    }).join('');
+}
+
+// ── MODAL ──────────────────────────────────────────────
+let modalCallback = null;
+
+function showConfirm(title, body, confirmLabel, confirmColor, cb) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').textContent = body;
+    const btn = document.getElementById('modalConfirmBtn');
+    btn.textContent = confirmLabel;
+    btn.style.background = confirmColor;
+    btn.style.color = '#fff';
+    modalCallback = () => { cb(); closeModal(); };
+    document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('confirmModal').classList.remove('open');
+    modalCallback = null;
+}
+
+document.getElementById('confirmModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+// ── TOAST ──────────────────────────────────────────────
+function toast(msg, type='success') {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.classList.add('show'), 10);
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+}
+
+// ── RESPONSIVE ─────────────────────────────────────────
+if (window.innerWidth <= 768) document.getElementById('hamburger').style.display = 'block';
+
+// ── INIT ───────────────────────────────────────────────
+renderOverview();
+</script>
+</body>
+</html>
